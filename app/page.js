@@ -1,113 +1,187 @@
+// import banner from "@/images/banner.jpg";
+"use client";
+import { Button } from "@/Components/ui/button";
+import ServiceBox from "@/Components/ServiceBox";
+import serviceImg1 from "@/images/east.jpg";
+import serviceImg2 from "@/images/west.jpg";
+import ComboBx from "@/Components/ComboBx";
+import aboutImg from "@/images/about.jpg";
 import Image from "next/image";
+import { PaginationDemo } from "@/Components/Pagination";
+import Disclosures from "@/Components/Disclosures";
+import Product from "@/Components/Product";
+import Banner from "@/Components/Banner";
+import { useEffect, useState } from "react";
+import fetchData from "@/lib/fetchData";
+import localdb from "@/localdb";
+import MyListbox from "@/Components/MyListbox";
 
 export default function Home() {
+  const [properties, setProperties] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rooms, setRooms] = useState(false);
+  const [metas, setMetas] = useState();
+
+  useEffect(() => {
+    (async () => {
+      const data = await fetchData(
+        `/properties?pagination[page]=${currentPage}&pagination[pageSize]=8&populate=*${
+          rooms ? `&filters[rooms][$eq]=${rooms}` : ""
+        }`
+      );
+      setProperties(data.data);
+      setMetas(data.meta);
+    })();
+  }, [currentPage, rooms]);
+
+  const elements = metas?.pagination?.pageCount;
+
+  const items = properties?.map((e, index) => {
+    return (
+      <Product
+        title={e.attributes.state}
+        rooms={e.attributes.rooms}
+        rating={e.attributes.rating}
+        id={e.id}
+        img={
+          process.env.NEXT_PUBLIC_STRAPI_URL +
+          e?.attributes?.images?.data[0].attributes.url
+        }
+        key={index}
+      ></Product>
+    );
+  });
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <Banner />
+      <main className="w-3/4 md:w-10/12 mx-auto mt-8 ">
+        <h1 className="text-2xl text-center font-bold md:text-2xl">
+          Our Services
+        </h1>
+
+        <div className="flex flex-col space-y-10 md:flex-row md:space-y-0 md:space-x-10 mt-10">
+          <ServiceBox
+            img={serviceImg1}
+            desc={localdb[1].desc}
+            directTo={"/serviceEast"}
+          />
+          <ServiceBox
+            img={serviceImg2}
+            desc={localdb[0].desc}
+            directTo={"/serviceWest"}
+          />
         </div>
-      </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+        <div className="flex flex-col mt-20 relative">
+          <h2 className="font-bold text-xl">Find your next home</h2>
+          <p className="font-medium text-gray-600">
+            Search for different properties
+          </p>
+
+          <div className="flex flex-col sm:flex-row mt-3 space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="sm:space-x-2 sm:space-y-0 space-y-3 flex flex-col sm:flex-row bg-slate-100 rounded-lg p-2">
+              <ComboBx />
+              
+            </div>
+
+            <div className="sm:space-x-2 sm:space-y-0 space-y-3 flex flex-col sm:flex-row bg-slate-100 rounded-lg p-2">
+              <MyListbox
+                rooms={rooms}
+                setRooms={setRooms}
+                setCurrenPage={setCurrentPage}
+              />
+            </div>
+          </div>
+          {/* <div className="absolute text-sm w-[210px]  left-0 top-[6.8rem] flex flex-col gap-3 py-2 px-2 bg-white rounded-md ">
+            <div className="flex justify-between items-center">
+              <div>
+                <Image
+                  className="rounded-lg"
+                  width={32}
+                  height={32}
+                  alt=""
+                  src={aboutImg}
+                />
+              </div>
+              <div>
+                <span>SunnyVale</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <Image
+                  className="rounded-lg"
+                  width={32}
+                  height={32}
+                  alt=""
+                  src={aboutImg}
+                />
+              </div>
+              <div>
+                <span>SunnyVale</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <Image
+                  className="rounded-lg"
+                  width={32}
+                  height={32}
+                  alt=""
+                  src={aboutImg}
+                />
+              </div>
+              <div>
+                <span>SunnyVale</span>
+              </div>
+            </div>
+          </div> */}
+        </div>
+
+        <div className="w-full gap-x-[4.8rem] mt-10 grid sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-y-11 ">
+          {items}
+        </div>
+
+        <PaginationDemo
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          elements={elements}
         />
-      </div>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+        <div className="mt-14 w-full grid   sm:grid-cols-2 mx-auto">
+          <div>
+            <Disclosures />
+          </div>
+          <div className="w-full   hidden sm:grid mx-auto  justify-center items-center">
+            <Image
+              className="rounded-lg"
+              src={aboutImg}
+              height={300}
+              width={300}
+            />
+          </div>
+        </div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        <div className="w-full mt-14 mx-auto text-center p-4 ">
+          <h1 className="font-semibold text-3xl">Koala's immediate services</h1>
+          <div className="text-center mx-7 sm:mx-20 mt-5">
+            <p>
+              We’re a diverse and passionate company that provides information
+              on hotels and their details for you to have a comfy stay. We stay
+              light on our feet and truly enjoy delivering great service.
+            </p>
+          </div>
+          <div className="mt-5 flex flex-col lg:flex-row gap-7 justify-center items-center">
+            <Button className="bg-slate-200 hover:bg-cyan-500 hover:text-white text-gray-700">
+              Insights
+            </Button>
+            <Button className="bg-slate-200 hover:bg-cyan-500 hover:text-white text-gray-700">
+              Contact
+            </Button>
+          </div>
+        </div>
+      </main>
+    </>
   );
 }

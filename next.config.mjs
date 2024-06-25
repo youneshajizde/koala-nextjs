@@ -1,4 +1,30 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+import withVideos from "next-videos";
 
-export default nextConfig;
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "localhost",
+        port: "1337",
+        pathname: "/**",
+      },
+    ],
+  },
+};
+
+export default {
+  ...nextConfig,
+  ...withVideos(),
+};
+
+// formats: ["image/avif", "image/webp"],
+//     remotePatterns: [
+//       {
+//         protocol: "http",
+//         hostname: "http://localhost:1337",
+//         port: "",
+//         pathname: "/image/upload/**",
+//       },
+//     ],
